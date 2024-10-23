@@ -1,6 +1,6 @@
 import express from "express";
 import type { Request, Response } from "express";
-import { BaileysClass } from "./utils/Bailyes";
+// import { BaileysClass } from "./utils/Bailyes";
 import axios from "axios";
 import { reminderInputSchema } from "./types/ReminderTypes";
 import type {
@@ -8,7 +8,11 @@ import type {
   reminderResponseType,
 } from "./types/ReminderTypes";
 import { llmForMessageParsing } from "./llm/ChatGroq";
-const botBaileys = new BaileysClass({});
+import { config } from "dotenv";
+import { BaileysClass } from "@bot-wa/bot-wa-baileys";
+config();
+
+const botBaileys = new BaileysClass();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -20,13 +24,12 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  // Initialize Baileys event listeners only when the server starts
+  console.log(`Server is running on PORT ${PORT}`);
   initializeBaileys();
 });
 
 function initializeBaileys() {
-  botBaileys.on("qr", (qr) => console.log("NEW QR CODE: ", qr));
+  // botBaileys.on("qr", (qr) => console.log("NEW QR CODE: ", qr));
   botBaileys.on("auth_failure", async (error) =>
     console.log("ERROR BOT: ", error)
   );
