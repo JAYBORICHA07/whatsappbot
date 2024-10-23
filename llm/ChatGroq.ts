@@ -1,6 +1,8 @@
 import { ChatGroq } from "@langchain/groq";
 import { z } from "zod";
 import { PromptTemplate } from "@langchain/core/prompts";
+import { config } from "dotenv";
+config();
 
 // Define the reminder schema using zod
 export const outputSchema = z.object({
@@ -76,7 +78,7 @@ export const llmForMessageParsing = async (
     const LangChainPrompt = PromptTemplate.fromTemplate(TEMPLATE);
 
     const llm = new ChatGroq({
-      apiKey: "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",
+      apiKey: process.env.GROQ_API_KEY,
       temperature: 0,
       maxTokens: undefined,
       maxRetries: 2,
