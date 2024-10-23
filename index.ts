@@ -7,9 +7,10 @@ import type {
   reminderInputType,
   reminderResponseType,
 } from "./types/ReminderTypes";
-import { llmForMessageParsing } from "./llm/ChatGroq";
+import { llmForMessageParsing, type outputSchema } from "./llm/ChatGroq";
 import { config } from "dotenv";
 import { BaileysClass } from "@bot-wa/bot-wa-baileys";
+import type { z } from "zod";
 config();
 
 const botBaileys = new BaileysClass();
@@ -43,40 +44,57 @@ botBaileys.on("message", async (message) => {
       message.key.remoteJid.match(/(\d{12})/)[0]
     );
     try {
-      const response = await llmForMessageParsing(
+      const response: z.infer<typeof outputSchema> = await llmForMessageParsing(
         message.body,
         message.key.remoteJid
       );
+      console.log(response);
+      const sentToReminderBackend = await axios.post(
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        process.env.REMINDER_BE_ADDREMINDER_URL!,
+        {
+          ...response,
+          whatsappNumber: message.key.remoteJid.match(/(\d{12})/)[0],
+        }
+      );
 
-      console.log({ response });
+      console.log(sentToReminderBackend.data);
+
+      await botBaileys.sendText(
+        message.from,
+        "Reminder Set. Thankyou for using RemindMe.com"
+      );
     } catch (error) {
+      botBaileys.sendText(
+        message.from,
+        // @ts-ignore
+        "There was an error while trying to set a reminder"
+      );
       console.log(error);
     }
 
     if (message.type === "poll") {
       const responseObj = {
-        messageId: message.key.id,
         userPhoneNumber: message.key.remoteJid.match(/(\d{12})/)[0],
         messageBody: message.body,
       };
       console.log(responseObj);
-      await axios.post(
-        "http://localhost:3000/api/whatsapp/receivePoll",
-        responseObj
-      );
+      // biome-ignore lint/style/noNonNullAssertion: <explanation>
+      await axios.post(process.env.REMINDER_BE_SEND_POLL_URL!, responseObj);
     }
   }
 });
 
 app.post("/send-reminder", async (req: Request, res: Response) => {
-  const { reminderInput }: { reminderInput: reminderInputType } =
-    await req.body;
+  const reminderInput: reminderInputType = await req.body;
+  console.log(reminderInput);
   const varifiedBodyObject = reminderInputSchema.safeParse(reminderInput);
   if (!varifiedBodyObject.success) {
     res.json({
       success: false,
       message: "Invalide body schema",
     });
+    return;
   }
   const responseObj: reminderResponseType = [];
   Promise.resolve(

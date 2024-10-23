@@ -3,7 +3,7 @@ import { z } from "zod";
 import { PromptTemplate } from "@langchain/core/prompts";
 
 // Define the reminder schema using zod
-const outputSchema = z.object({
+export const outputSchema = z.object({
   isReminder: z
     .boolean()
     .describe(
@@ -107,7 +107,7 @@ export const llmForMessageParsing = async (
     throw {
       status: 500,
       message: "An unexpected error occurred while processing the request.",
-      error: error instanceof Error ? error.message : String(error),
+      error: error instanceof Error ? error.message : error,
     };
   }
 };
