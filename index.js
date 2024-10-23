@@ -13,11 +13,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const Bailyes_1 = require("./utils/Bailyes");
+// import { BaileysClass } from "./utils/Bailyes";
 const axios_1 = __importDefault(require("axios"));
 const ReminderTypes_1 = require("./types/ReminderTypes");
 const ChatGroq_1 = require("./llm/ChatGroq");
-const botBaileys = new Bailyes_1.BaileysClass({});
+const dotenv_1 = require("dotenv");
+const bot_wa_baileys_1 = require("@bot-wa/bot-wa-baileys");
+(0, dotenv_1.config)();
+const botBaileys = new bot_wa_baileys_1.BaileysClass();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8080;
 app.use(express_1.default.json());
@@ -25,12 +28,11 @@ app.get("/", (req, res) => {
     res.send("Hello, World! This is an Express server using TypeScript.");
 });
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    // Initialize Baileys event listeners only when the server starts
+    console.log(`Server is running on PORT ${PORT}`);
     initializeBaileys();
 });
 function initializeBaileys() {
-    botBaileys.on("qr", (qr) => console.log("NEW QR CODE: ", qr));
+    // botBaileys.on("qr", (qr) => console.log("NEW QR CODE: ", qr));
     botBaileys.on("auth_failure", (error) => __awaiter(this, void 0, void 0, function* () { return console.log("ERROR BOT: ", error); }));
     botBaileys.on("ready", () => __awaiter(this, void 0, void 0, function* () { return console.log("READY BOT"); }));
 }

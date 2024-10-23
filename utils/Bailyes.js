@@ -40,11 +40,13 @@ class BaileysClass extends events_1.EventEmitter {
         });
         this.getInstance = () => this.vendor;
         this.initBailey = () => __awaiter(this, void 0, void 0, function* () {
-            const logger = (0, pino_1.default)({ level: this.globalVendorArgs.debug ? 'debug' : 'fatal' });
+            const logger = (0, pino_1.default)({
+                level: this.globalVendorArgs.debug ? "debug" : "fatal",
+            });
             const { state, saveCreds } = yield (0, baileys_2.useMultiFileAuthState)(this.NAME_DIR_SESSION);
             const { version, isLatest } = yield (0, baileys_2.fetchLatestBaileysVersion)();
             if (this.globalVendorArgs.debug)
-                console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`);
+                console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
             // @ts-ignore
             this.store = (0, baileys_2.makeInMemoryStore)({ logger });
             this.store.readFromFile(`${this.NAME_DIR_SESSION}/baileys_store.json`);
@@ -58,7 +60,7 @@ class BaileysClass extends events_1.EventEmitter {
                 this.setUpBaileySock({ version, logger, state, saveCreds });
             }
             catch (e) {
-                this.emit('auth_failure', e);
+                this.emit("auth_failure", e);
             }
         });
         // @ts-ignore
@@ -72,7 +74,7 @@ class BaileysClass extends events_1.EventEmitter {
                     creds: state.creds,
                     keys: (0, baileys_2.makeCacheableSignalKeyStore)(state.keys, logger),
                 },
-                browser: baileys_2.Browsers.macOS('Desktop'),
+                browser: baileys_2.Browsers.macOS("Desktop"),
                 msgRetryCounterCache,
                 generateHighQualityLinkPreview: true,
                 getMessage: this.getMessage,
@@ -84,50 +86,50 @@ class BaileysClass extends events_1.EventEmitter {
                     yield this.sock.waitForConnectionUpdate((update) => !!update.qr);
                     const code = yield this.sock.requestPairingCode(this.globalVendorArgs.phoneNumber);
                     if (this.plugin) {
-                        this.emit('require_action', {
+                        this.emit("require_action", {
                             instructions: [
                                 `Acepta la notificación del WhatsApp ${this.globalVendorArgs.phoneNumber} en tu celular 👌`,
                                 `El token para la vinculación es: ${code}`,
-                                `Necesitas ayuda: https://link.codigoencasa.com/DISCORD`,
+                                "Necesitas ayuda: https://link.codigoencasa.com/DISCORD",
                             ],
                         });
                     }
                     else {
-                        this.emit('pairing_code', code);
+                        this.emit("pairing_code", code);
                     }
                 }
                 else {
-                    this.emit('auth_failure', 'phoneNumber is empty');
+                    this.emit("auth_failure", "phoneNumber is empty");
                 }
             }
-            this.sock.ev.on('connection.update', this.handleConnectionUpdate);
-            this.sock.ev.on('creds.update', saveCreds);
+            this.sock.ev.on("connection.update", this.handleConnectionUpdate);
+            this.sock.ev.on("creds.update", saveCreds);
         });
         this.handleConnectionUpdate = (update) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             const { connection, lastDisconnect, qr } = update;
             const statusCode = (_b = (_a = lastDisconnect === null || lastDisconnect === void 0 ? void 0 : lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode;
-            if (connection === 'close') {
+            if (connection === "close") {
                 if (statusCode !== baileys_2.DisconnectReason.loggedOut)
                     this.initBailey();
                 if (statusCode === baileys_2.DisconnectReason.loggedOut)
                     this.clearSessionAndRestart();
             }
-            if (connection === 'open') {
+            if (connection === "open") {
                 this.vendor = this.sock;
                 this.initBusEvents(this.sock);
-                this.emit('ready', true);
+                this.emit("ready", true);
             }
             if (qr && !this.globalVendorArgs.usePairingCode) {
                 if (this.plugin)
-                    this.emit('require_action', {
+                    this.emit("require_action", {
                         instructions: [
                             `Debes escanear el QR Code 👌 ${this.globalVendorArgs.name}.qr.png`,
                             `Recuerda que el QR se actualiza cada minuto `,
                             `Necesitas ayuda: https://link.codigoencasa.com/DISCORD`,
                         ],
                     });
-                this.emit('qr', qr);
+                this.emit("qr", qr);
                 if (this.plugin)
                     yield utils_1.default.baileyGenerateImage(qr, `${this.globalVendorArgs.name}.qr.png`);
             }
@@ -139,20 +141,20 @@ class BaileysClass extends events_1.EventEmitter {
         };
         this.busEvents = () => [
             {
-                event: 'messages.upsert',
+                event: "messages.upsert",
                 // @ts-ignore
                 func: ({ messages, type }) => {
                     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
                     // Ignore notify messages
-                    if (type !== 'notify')
+                    if (type !== "notify")
                         return;
                     const [messageCtx] = messages;
-                    let payload = Object.assign(Object.assign({}, messageCtx), { body: (_c = (_b = (_a = messageCtx === null || messageCtx === void 0 ? void 0 : messageCtx.message) === null || _a === void 0 ? void 0 : _a.extendedTextMessage) === null || _b === void 0 ? void 0 : _b.text) !== null && _c !== void 0 ? _c : (_d = messageCtx === null || messageCtx === void 0 ? void 0 : messageCtx.message) === null || _d === void 0 ? void 0 : _d.conversation, from: (_e = messageCtx === null || messageCtx === void 0 ? void 0 : messageCtx.key) === null || _e === void 0 ? void 0 : _e.remoteJid, type: 'text' });
+                    let payload = Object.assign(Object.assign({}, messageCtx), { body: (_c = (_b = (_a = messageCtx === null || messageCtx === void 0 ? void 0 : messageCtx.message) === null || _a === void 0 ? void 0 : _a.extendedTextMessage) === null || _b === void 0 ? void 0 : _b.text) !== null && _c !== void 0 ? _c : (_d = messageCtx === null || messageCtx === void 0 ? void 0 : messageCtx.message) === null || _d === void 0 ? void 0 : _d.conversation, from: (_e = messageCtx === null || messageCtx === void 0 ? void 0 : messageCtx.key) === null || _e === void 0 ? void 0 : _e.remoteJid, type: "text" });
                     // Ignore pollUpdateMessage
                     if ((_f = messageCtx.message) === null || _f === void 0 ? void 0 : _f.pollUpdateMessage)
                         return;
                     // Ignore broadcast messages
-                    if (payload.from === 'status@broadcast')
+                    if (payload.from === "status@broadcast")
                         return;
                     // Ignore messages from self
                     if ((_g = payload === null || payload === void 0 ? void 0 : payload.key) === null || _g === void 0 ? void 0 : _g.fromMe)
@@ -160,23 +162,24 @@ class BaileysClass extends events_1.EventEmitter {
                     // Detect location
                     if ((_h = messageCtx.message) === null || _h === void 0 ? void 0 : _h.locationMessage) {
                         const { degreesLatitude, degreesLongitude } = messageCtx.message.locationMessage;
-                        if (typeof degreesLatitude === 'number' && typeof degreesLongitude === 'number') {
-                            payload = Object.assign(Object.assign({}, payload), { body: utils_1.default.generateRefprovider('_event_location_'), type: 'location' });
+                        if (typeof degreesLatitude === "number" &&
+                            typeof degreesLongitude === "number") {
+                            payload = Object.assign(Object.assign({}, payload), { body: utils_1.default.generateRefprovider("_event_location_"), type: "location" });
                         }
                     }
                     // Detect  media
                     if ((_j = messageCtx.message) === null || _j === void 0 ? void 0 : _j.imageMessage) {
-                        payload = Object.assign(Object.assign({}, payload), { body: utils_1.default.generateRefprovider('_event_media_'), type: 'image' });
+                        payload = Object.assign(Object.assign({}, payload), { body: utils_1.default.generateRefprovider("_event_media_"), type: "image" });
                     }
                     // Detect  ectar file
                     if ((_k = messageCtx.message) === null || _k === void 0 ? void 0 : _k.documentMessage) {
-                        payload = Object.assign(Object.assign({}, payload), { body: utils_1.default.generateRefprovider('_event_document_'), type: 'file' });
+                        payload = Object.assign(Object.assign({}, payload), { body: utils_1.default.generateRefprovider("_event_document_"), type: "file" });
                     }
                     // Detect voice note
                     if ((_l = messageCtx.message) === null || _l === void 0 ? void 0 : _l.audioMessage) {
-                        payload = Object.assign(Object.assign({}, payload), { body: utils_1.default.generateRefprovider('_event_voice_note_'), type: 'voice' });
+                        payload = Object.assign(Object.assign({}, payload), { body: utils_1.default.generateRefprovider("_event_voice_note_"), type: "voice" });
                     }
-                    // Check from user and group is valid 
+                    // Check from user and group is valid
                     if (!utils_1.default.formatPhone(payload.from)) {
                         return;
                     }
@@ -187,11 +190,11 @@ class BaileysClass extends events_1.EventEmitter {
                     if (listRowId)
                         payload.body = listRowId;
                     payload.from = utils_1.default.formatPhone(payload.from, this.plugin);
-                    this.emit('message', payload);
+                    this.emit("message", payload);
                 },
             },
             {
-                event: 'messages.update',
+                event: "messages.update",
                 // @ts-ignore
                 func: (message) => __awaiter(this, void 0, void 0, function* () {
                     var _a;
@@ -204,13 +207,14 @@ class BaileysClass extends events_1.EventEmitter {
                                     pollUpdates: update.pollUpdates,
                                 });
                                 const [messageCtx] = message;
-                                let payload = Object.assign(Object.assign({}, messageCtx), { body: ((_a = pollMessage.find(poll => poll.voters.length > 0)) === null || _a === void 0 ? void 0 : _a.name) || '', from: utils_1.default.formatPhone(key.remoteJid, this.plugin), voters: pollCreation, type: 'poll' });
-                                this.emit('message', payload);
+                                let payload = Object.assign(Object.assign({}, messageCtx), { body: ((_a = pollMessage.find((poll) => poll.voters.length > 0)) === null || _a === void 0 ? void 0 : _a.name) ||
+                                        "", from: utils_1.default.formatPhone(key.remoteJid, this.plugin), voters: pollCreation, type: "poll" });
+                                this.emit("message", payload);
                             }
                         }
                     }
-                })
-            }
+                }),
+            },
         ];
         this.initBusEvents = (_sock) => {
             this.vendor = _sock;
@@ -230,11 +234,11 @@ class BaileysClass extends events_1.EventEmitter {
             try {
                 const fileDownloaded = yield utils_1.default.generalDownload(mediaUrl);
                 const mimeType = mime_types_1.default.lookup(fileDownloaded);
-                if (typeof mimeType === 'string' && mimeType.includes('image'))
+                if (typeof mimeType === "string" && mimeType.includes("image"))
                     return this.sendImage(number, fileDownloaded, text);
-                if (typeof mimeType === 'string' && mimeType.includes('video'))
+                if (typeof mimeType === "string" && mimeType.includes("video"))
                     return this.sendVideo(number, fileDownloaded, text);
-                if (typeof mimeType === 'string' && mimeType.includes('audio')) {
+                if (typeof mimeType === "string" && mimeType.includes("audio")) {
                     const fileOpus = yield utils_1.default.convertAudio(fileDownloaded);
                     return this.sendAudio(number, fileOpus);
                 }
@@ -256,7 +260,7 @@ class BaileysClass extends events_1.EventEmitter {
             const numberClean = utils_1.default.formatPhone(number);
             return this.vendor.sendMessage(numberClean, {
                 image: (0, node_fs_1.readFileSync)(filePath),
-                caption: text !== null && text !== void 0 ? text : '',
+                caption: text !== null && text !== void 0 ? text : "",
             });
         });
         /**
@@ -309,7 +313,7 @@ class BaileysClass extends events_1.EventEmitter {
         this.sendFile = (number, filePath) => __awaiter(this, void 0, void 0, function* () {
             const numberClean = utils_1.default.formatPhone(number);
             const mimeType = mime_types_1.default.lookup(filePath);
-            const fileName = filePath.split('/').pop();
+            const fileName = filePath.split("/").pop();
             return this.vendor.sendMessage(numberClean, {
                 document: { url: filePath },
                 mimetype: mimeType,
@@ -333,20 +337,20 @@ class BaileysClass extends events_1.EventEmitter {
             }));
             const buttonMessage = {
                 text,
-                footer: '',
+                footer: "",
                 buttons: templateButtons,
                 headerType: 1,
             };
             return this.vendor.sendMessage(numberClean, buttonMessage);
         });
         /**
-        *
-        * @param {string} number
-        * @param {string} text
-        * @param {string} footer
-        * @param {Array} poll
-        * @example await sendMessage("+XXXXXXXXXXX", "Your Text", "Your Footer", [{"buttonId": "id", "buttonText": {"displayText": "Button"}, "type": 1}])
-        */
+         *
+         * @param {string} number
+         * @param {string} text
+         * @param {string} footer
+         * @param {Array} poll
+         * @example await sendMessage("+XXXXXXXXXXX", "Your Text", "Your Footer", [{"buttonId": "id", "buttonText": {"displayText": "Button"}, "type": 1}])
+         */
         this.sendPoll = (number, text, poll) => __awaiter(this, void 0, void 0, function* () {
             const numberClean = utils_1.default.formatPhone(number);
             if (poll.options.length < 2)
@@ -354,7 +358,7 @@ class BaileysClass extends events_1.EventEmitter {
             const pollMessage = {
                 name: text,
                 values: poll.options,
-                selectableCount: 1
+                selectableCount: 1,
             };
             return this.vendor.sendMessage(numberClean, { poll: pollMessage });
         });
@@ -368,7 +372,7 @@ class BaileysClass extends events_1.EventEmitter {
             const number = utils_1.default.formatPhone(numberIn);
             if ((_a = options.options.buttons) === null || _a === void 0 ? void 0 : _a.length) {
                 return this.sendPoll(number, message, {
-                    options: (_b = options.options.buttons.map((btn, i) => (btn.body))) !== null && _b !== void 0 ? _b : [],
+                    options: (_b = options.options.buttons.map((btn, i) => btn.body)) !== null && _b !== void 0 ? _b : [],
                 });
             }
             if ((_c = options.options) === null || _c === void 0 ? void 0 : _c.media)
@@ -389,7 +393,7 @@ class BaileysClass extends events_1.EventEmitter {
                     degreesLongitude: longitude,
                 },
             }, { quoted: messages });
-            return { status: 'success' };
+            return { status: "success" };
         });
         /**
          * @param {string} remoteJid
@@ -399,21 +403,21 @@ class BaileysClass extends events_1.EventEmitter {
          * @example await sendContact("xxxxxxxxxxx@c.us" || "xxxxxxxxxxxxxxxxxx@g.us", "+xxxxxxxxxxx", "Robin Smith", messages)
          */
         this.sendContact = (remoteJid_1, contactNumber_1, displayName_1, ...args_1) => __awaiter(this, [remoteJid_1, contactNumber_1, displayName_1, ...args_1], void 0, function* (remoteJid, contactNumber, displayName, messages = null) {
-            const cleanContactNumber = contactNumber.replace(/ /g, '');
-            const waid = cleanContactNumber.replace('+', '');
-            const vcard = 'BEGIN:VCARD\n' +
-                'VERSION:3.0\n' +
+            const cleanContactNumber = contactNumber.replace(/ /g, "");
+            const waid = cleanContactNumber.replace("+", "");
+            const vcard = "BEGIN:VCARD\n" +
+                "VERSION:3.0\n" +
                 `FN:${displayName}\n` +
-                'ORG:Ashoka Uni;\n' +
+                "ORG:Ashoka Uni;\n" +
                 `TEL;type=CELL;type=VOICE;waid=${waid}:${cleanContactNumber}\n` +
-                'END:VCARD';
+                "END:VCARD";
             yield this.vendor.sendMessage(remoteJid, {
                 contacts: {
                     displayName: displayName,
                     contacts: [{ vcard }],
                 },
             }, { quoted: messages });
-            return { status: 'success' };
+            return { status: "success" };
         });
         /**
          * @param {string} remoteJid
@@ -435,19 +439,19 @@ class BaileysClass extends events_1.EventEmitter {
             const fileDownloaded = yield utils_1.default.generalDownload(url);
             yield this.vendor.sendMessage(number, {
                 sticker: {
-                    url: fileDownloaded
+                    url: fileDownloaded,
                 },
             }, { quoted: messages });
         });
         this.vendor = null;
         this.store = null;
-        this.globalVendorArgs = Object.assign({ name: `bot`, usePairingCode: false, phoneNumber: null, gifPlayback: false, dir: './' }, args);
+        this.globalVendorArgs = Object.assign({ name: "bot", usePairingCode: false, phoneNumber: null, gifPlayback: false, dir: "./" }, args);
         this.NAME_DIR_SESSION = `${this.globalVendorArgs.dir}${this.globalVendorArgs.name}_sessions`;
         this.initBailey();
         // is plugin?
         const err = new Error();
         const stack = err.stack;
-        this.plugin = (_a = stack === null || stack === void 0 ? void 0 : stack.includes('createProvider')) !== null && _a !== void 0 ? _a : false;
+        this.plugin = (_a = stack === null || stack === void 0 ? void 0 : stack.includes("createProvider")) !== null && _a !== void 0 ? _a : false;
     }
 }
 exports.BaileysClass = BaileysClass;
