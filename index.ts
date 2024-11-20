@@ -86,9 +86,11 @@ botBaileys.on("message", async (message) => {
 });
 
 app.post("/send-reminder", async (req: Request, res: Response) => {
-  const reminderInput: reminderInputType = await req.body;
+  const { reminderInput }: { reminderInput: reminderInputType } =
+    await req.body;
   console.log(reminderInput);
   const varifiedBodyObject = reminderInputSchema.safeParse(reminderInput);
+  console.log(varifiedBodyObject.error);
   if (!varifiedBodyObject.success) {
     res.json({
       success: false,
@@ -103,13 +105,7 @@ app.post("/send-reminder", async (req: Request, res: Response) => {
       try {
         botBaileys.sendText(
           reminder.whatsappNumber,
-          `*🔔🚀 ${reminder.title} 🚀🔔* \n
-          ━━━━━━━━━━━━━━━━━━━━━  \n
-          📋 *Details:*  \n
-          ${reminder.description}  \n\n
-
-          ✨ *Don't miss it!* ✨  \n
-          `
+          `*🔔🚀 ${reminder.title} 🚀🔔* \n\n ━━━━━━━━━━━━━━━━━━━━━  \n 📋 *Details:*  \n\n ${reminder.description}  \n\n✨ *Don't miss it!* ✨`
         );
 
         responseObj.push({
@@ -127,6 +123,7 @@ app.post("/send-reminder", async (req: Request, res: Response) => {
       }
     })
   );
+  console.log;
   res.send(responseObj);
 });
 
